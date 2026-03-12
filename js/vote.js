@@ -68,12 +68,8 @@ document.getElementById('kahoot-join-btn').addEventListener('click', () => {
   }
   voterName = input;
   localStorage.setItem('ivp_voter_name', input);
-  
-  if (currentQuestion) {
-    handleStateChange();
-  } else {
-    showState('waiting');
-  }
+  // 登入後才開始載入投票並建立即時監聽，確保 activeQuestion 變化能被偵測
+  loadPoll();
 });
 
 function init() {
@@ -86,6 +82,11 @@ function init() {
   
   if (!checkLogin()) {
     showState('login');
+    // 自動 focus 輸入框，方便手機鍵盤彈出
+    setTimeout(() => {
+      const input = document.getElementById('kahoot-name-input');
+      if (input) input.focus();
+    }, 100);
   } else {
     loadPoll();
   }
@@ -117,6 +118,20 @@ function listenToActiveQuestion() {
 
     if (!activeQId) {
       if (votesUnsubscribe) { votesUnsubscribe(); votesUnsubscribe = null; }
+      // 若玩家剛投完票，重新取得題目最新狀態（isActive 已變 false）
+      // 才能讓 handleStateChange 正確判斷並顯示正確/錯誤回饋
+      if (currentQuestion) {
+        const prevId = currentQuestion.id;
+        try {
+          const qDoc = await db.collection('polls').doc(pollId)
+            .collection('questions').doc(prevId).get();
+          if (qDoc.exists) {
+            currentQuestion = { id: qDoc.id, ...qDoc.data() };
+            handleStateChange();
+            return;
+          }
+        } catch (_) { /* fall through */ }
+      }
       currentQuestion = null;
       showState('waiting');
       return;
