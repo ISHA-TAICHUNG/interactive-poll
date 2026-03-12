@@ -169,18 +169,20 @@ function handleStateChange() {
   const correctId = currentQuestion.correctOptionId;
 
   if (currentQuestion.isActive) {
-    if (votedOptionId) showState('voted-waiting');
-    else showVoting(currentQuestion);
-  } else {
-    if (votedOptionId && correctId) {
-      if (votedOptionId === correctId) showState('correct');
-      else showState('wrong');
-      
-      // 在背景載入結果，等使用者自己看投影，或者也可以設計過幾秒切換
-      setTimeout(() => { if (currentQuestion && !currentQuestion.isActive && currentQuestion.id === qId) showResults(qId, currentQuestion); }, 3500);
+    if (votedOptionId) {
+      // 已投票 → 立即顯示答對/答錯，不等管理者關閉
+      if (correctId) {
+        if (votedOptionId === correctId) showState('correct');
+        else showState('wrong');
+      } else {
+        showState('voted-waiting');
+      }
     } else {
-      showResults(qId, currentQuestion);
+      showVoting(currentQuestion);
     }
+  } else {
+    // 管理者已關閉題目 → 顯示完整統計
+    showResults(qId, currentQuestion);
   }
 }
 
@@ -254,6 +256,14 @@ async function submitVote() {
 //  Results UI
 // ============================
 
+// 答對名字的徽章顏色
+const BADGE_COLORS = [
+  { bg: '#FDE68A', text: '#92400E' }, { bg: '#A7F3D0', text: '#065F46' },
+  { bg: '#BFDBFE', text: '#1E40AF' }, { bg: '#DDD6FE', text: '#5B21B6' },
+  { bg: '#FBCFE8', text: '#9D174D' }, { bg: '#FED7AA', text: '#9A3412' },
+  { bg: '#BBF7D0', text: '#14532D' }, { bg: '#E0F2FE', text: '#0C4A6E' },
+];
+
 function showResults(qId, question) {
   showState('results');
   document.getElementById('results-question-text').textContent = question.text;
@@ -265,12 +275,20 @@ function showResults(qId, question) {
     .collection('questions').doc(qId).collection('votes')
     .onSnapshot(snap => {
       const counts = {};
-      snap.docs.forEach(d => { const o = d.data().optionId; counts[o] = (counts[o] || 0) + 1; });
+      const namesByOpt = {};
+      snap.docs.forEach(d => {
+        const data = d.data();
+        const o = data.optionId;
+        counts[o] = (counts[o] || 0) + 1;
+        if (!namesByOpt[o]) namesByOpt[o] = [];
+        if (data.name) namesByOpt[o].push(data.name);
+      });
       const total = snap.size;
       const maxVotes = Math.max(...Object.values(counts), 0);
 
       document.getElementById('results-total-votes').textContent = `共 ${total} 票`;
 
+      // 選項統計列表
       document.getElementById('results-list').innerHTML = question.options.map((opt, i) => {
         const c = counts[opt.id] || 0;
         const pct = total > 0 ? Math.round((c / total) * 100) : 0;
@@ -292,6 +310,32 @@ function showResults(qId, question) {
             </div>
           </div>`;
       }).join('');
+
+      // 答對的人區塊
+      const correctSection = document.getElementById('correct-section');
+      if (correctId) {
+        const winners = namesByOpt[correctId] || [];
+        const count = winners.length;
+        const badgesHtml = winners.length > 0
+          ? winners.map((name, i) => {
+              const col = BADGE_COLORS[i % BADGE_COLORS.length];
+              return `<span class="winner-badge" style="background:${col.bg};color:${col.text};">
+                <span class="winner-badge-star">⭐</span>${escapeHtml(name)}
+              </span>`;
+            }).join('')
+          : `<div class="no-winners-msg">😢 這次還沒有人答對</div>`;
+
+        correctSection.innerHTML = `
+          <div class="correct-section-hd">
+            <span class="correct-section-trophy">🏆</span>
+            <span class="correct-section-title">答對的同學</span>
+            <span class="correct-count-pill">${count} 人</span>
+          </div>
+          <div class="winner-badges-wrap">${badgesHtml}</div>`;
+        correctSection.classList.remove('hidden');
+      } else {
+        correctSection.classList.add('hidden');
+      }
     });
 }
 

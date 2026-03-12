@@ -603,6 +603,56 @@ textarea.form-input { resize: vertical; min-height: 88px; line-height: 1.6; }
   padding: 1px 7px; border-radius: var(--r-full); border: 1px solid #A7F3D0;
   flex-shrink: 0; margin-right: 4px;
 }
+
+/* ============================================================
+   CORRECT ANSWER SECTION (答對的同學)
+   ============================================================ */
+.correct-section {
+  padding: 18px 16px 20px;
+  border-top: 1.5px dashed #FCD34D;
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF9EC 100%);
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+}
+.correct-section-hd {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+}
+.correct-section-trophy {
+  font-size: 24px;
+  animation: trophyBounce 1.2s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes trophyBounce {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50%       { transform: translateY(-4px) rotate(5deg); }
+}
+.correct-section-title {
+  font-size: 15px; font-weight: 800; color: #92400E; flex: 1;
+}
+.correct-count-pill {
+  background: #FDE68A; color: #92400E;
+  font-size: 12px; font-weight: 800;
+  padding: 4px 12px; border-radius: var(--r-full);
+  border: 1.5px solid #FCD34D;
+  white-space: nowrap;
+}
+.winner-badges-wrap {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.winner-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 14px; border-radius: var(--r-full);
+  font-size: 13px; font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  animation: popIn .35s cubic-bezier(.175,.885,.32,1.275) both;
+}
+.winner-badge-star { font-size: 12px; }
+@keyframes popIn {
+  from { opacity: 0; transform: scale(.5) rotate(-10deg); }
+  to   { opacity: 1; transform: scale(1)  rotate(0deg); }
+}
+.no-winners-msg {
+  font-size: 14px; color: var(--tx-3); padding: 4px 0;
+}
 .result-stat { font-size: 13px; font-weight: 700; color: var(--tx-2); white-space: nowrap; }
 .result-bar  { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
 .result-bar-fill {
