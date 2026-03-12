@@ -340,6 +340,14 @@ function showResults(qId, question) {
 }
 
 // ============================
+//  Cleanup on page unload
+// ============================
+window.addEventListener('beforeunload', () => {
+  if (questionUnsubscribe) questionUnsubscribe();
+  if (votesUnsubscribe) votesUnsubscribe();
+});
+
+// ============================
 //  Start
 // ============================
 document.addEventListener('DOMContentLoaded', init);

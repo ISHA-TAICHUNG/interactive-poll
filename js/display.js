@@ -146,4 +146,8 @@ function renderBars(question, counts, total, votersByOpt = {}) {
   }).join('');
 }
 
+window.addEventListener('beforeunload', () => {
+  if (votesUnsubscribe) votesUnsubscribe();
+});
+
 document.addEventListener('DOMContentLoaded', init);

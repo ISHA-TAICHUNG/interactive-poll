@@ -94,7 +94,7 @@ async function loadPolls() {
       .orderBy('createdAt', 'desc')
       .onSnapshot(snap => renderPollsList(snap.docs));
   } catch (err) {
-    listEl.innerHTML = `<p style="padding:16px;color:var(--red-500);font-size:13px;">載入失敗: ${err.message}</p>`;
+    listEl.innerHTML = `<p style="padding:16px;color:var(--red-500);font-size:13px;">載入失敗，請重新整理頁面</p>`;
   }
 }
 
@@ -170,23 +170,29 @@ document.getElementById('reset-poll-btn').addEventListener('click', async () => 
     let batch = db.batch();
     let count = 0;
 
+    // 使用 for...of 確保每次 commit 都能正確 await
     for (const qDoc of qSnap.docs) {
       const vSnap = await db.collection('polls').doc(currentPollId)
         .collection('questions').doc(qDoc.id).collection('votes').get();
 
-      vSnap.docs.forEach(vDoc => {
+      for (const vDoc of vSnap.docs) {
         batch.delete(vDoc.ref);
         count++;
         if (count >= 400) {
-          batch.commit();
+          await batch.commit();
           batch = db.batch();
           count = 0;
         }
-      });
+      }
 
       // 重設題目狀態
       batch.update(qDoc.ref, { isActive: false });
       count++;
+      if (count >= 400) {
+        await batch.commit();
+        batch = db.batch();
+        count = 0;
+      }
     }
 
     // 清除目前開放的題目
@@ -205,18 +211,43 @@ document.getElementById('reset-poll-btn').addEventListener('click', async () => 
 document.getElementById('delete-poll-btn').addEventListener('click', async () => {
   if (!currentPollId) return;
   if (!confirm('確定要刪除此投票活動？所有題目與投票資料也將一併刪除，此操作無法復原。')) return;
+
+  const btn = document.getElementById('delete-poll-btn');
+  btn.disabled = true; btn.textContent = '刪除中...';
+
   try {
     const qSnap = await db.collection('polls').doc(currentPollId).collection('questions').get();
-    const batch = db.batch();
-    qSnap.docs.forEach(d => batch.delete(d.ref));
+
+    // 必須先刪除 votes 子集合，Firestore 不會自動刪除子集合
+    let batch = db.batch();
+    let count = 0;
+
+    for (const qDoc of qSnap.docs) {
+      const vSnap = await db.collection('polls').doc(currentPollId)
+        .collection('questions').doc(qDoc.id).collection('votes').get();
+
+      for (const vDoc of vSnap.docs) {
+        batch.delete(vDoc.ref);
+        count++;
+        if (count >= 400) { await batch.commit(); batch = db.batch(); count = 0; }
+      }
+
+      batch.delete(qDoc.ref);
+      count++;
+      if (count >= 400) { await batch.commit(); batch = db.batch(); count = 0; }
+    }
+
     batch.delete(db.collection('polls').doc(currentPollId));
     await batch.commit();
+
     showToast('活動已刪除', 'success');
     currentPollId = null;
     showSection('welcome-panel');
     if (questionsUnsubscribe) { questionsUnsubscribe(); questionsUnsubscribe = null; }
   } catch (err) {
     showToast('刪除失敗: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '🗑️ 刪除活動';
   }
 });
 
@@ -521,3 +552,11 @@ window.deleteQuestion = async function(pollId, qId) {
     showToast('刪除失敗: ' + err.message, 'error');
   }
 };
+
+// ============================
+//  Cleanup on page unload
+// ============================
+window.addEventListener('beforeunload', () => {
+  if (questionsUnsubscribe) questionsUnsubscribe();
+  Object.values(votesUnsubscribers).forEach(u => u());
+});

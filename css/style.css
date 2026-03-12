@@ -626,6 +626,7 @@ textarea.form-input { resize: vertical; min-height: 88px; line-height: 1.6; }
   font-size: 24px;
   animation: trophyBounce 1.2s ease-in-out infinite;
   display: inline-block;
+  will-change: transform;
 }
 @keyframes trophyBounce {
   0%, 100% { transform: translateY(0) rotate(-5deg); }
@@ -650,6 +651,7 @@ textarea.form-input { resize: vertical; min-height: 88px; line-height: 1.6; }
   font-size: 13px; font-weight: 700;
   box-shadow: 0 2px 6px rgba(0,0,0,.08);
   animation: popIn .35s cubic-bezier(.175,.885,.32,1.275) both;
+  will-change: transform, opacity;
 }
 .winner-badge-star { font-size: 12px; }
 @keyframes popIn {
@@ -829,6 +831,14 @@ textarea.form-input { resize: vertical; min-height: 88px; line-height: 1.6; }
 .vote-join-form   { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 12px; }
 .vote-join-input  { height: 56px; font-size: 18px; font-weight: 700; text-align: center; border-radius: 12px; }
 .vote-join-btn    { height: 56px; font-size: 18px; }
+
+/* 尊重使用者系統「減少動態效果」設定 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
 
 /* ============================================================
    Responsive
