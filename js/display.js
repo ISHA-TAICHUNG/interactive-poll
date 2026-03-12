@@ -130,8 +130,8 @@ function renderBars(question, counts, total, votersByOpt = {}) {
     return `
       <div class="display-res-item" style="padding-bottom: 24px; transition: opacity 0.5s;">
         <div class="display-res-label">
-          ${isWinner && correctId && !question.isActive ? '<span style="color:#6EE7B7; margin-right:6px;">✓</span>' : ''}
           ${opt.letter || LETTERS[i]}. ${escapeHtml(opt.text)}
+          ${isWinner && correctId && !question.isActive ? '<span style="font-size:12px;font-weight:700;background:rgba(110,231,183,.15);color:#6EE7B7;border:1px solid rgba(110,231,183,.3);padding:2px 8px;border-radius:20px;margin-left:8px;">✓ 正確答案</span>' : ''}
         </div>
         <div class="display-res-bar-wrap">
           <div class="display-res-bar" style="${!isWinner && !question.isActive && correctId ? 'opacity:0.3;' : ''}">

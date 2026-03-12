@@ -274,12 +274,14 @@ function showResults(qId, question) {
       document.getElementById('results-list').innerHTML = question.options.map((opt, i) => {
         const c = counts[opt.id] || 0;
         const pct = total > 0 ? Math.round((c / total) * 100) : 0;
-        const isWinner = correctId ? opt.id === correctId : c === maxVotes && c > 0;
+        const isCorrect = correctId && opt.id === correctId;
+        const isWinner = isCorrect || (!correctId && c === maxVotes && c > 0);
         const isMe = opt.id === myChoice;
         return `
           <div class="result-item ${isWinner ? 'winner' : ''}">
             <div class="result-row">
               <div class="result-opt-label">
+                ${isCorrect ? '<span class="correct-tag">✓ 正確答案</span>' : ''}
                 ${escapeHtml(opt.text)}
                 ${isMe ? '<span class="my-vote-tag">我的選擇</span>' : ''}
               </div>

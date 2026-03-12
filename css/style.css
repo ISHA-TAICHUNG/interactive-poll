@@ -597,6 +597,12 @@ textarea.form-input { resize: vertical; min-height: 88px; line-height: 1.6; }
   background: var(--primary-bg); color: var(--primary);
   padding: 1px 7px; border-radius: var(--r-full); border: 1px solid var(--indigo-100); flex-shrink: 0;
 }
+.correct-tag {
+  font-size: 10px; font-weight: 700;
+  background: var(--green-bg); color: var(--green-text);
+  padding: 1px 7px; border-radius: var(--r-full); border: 1px solid #A7F3D0;
+  flex-shrink: 0; margin-right: 4px;
+}
 .result-stat { font-size: 13px; font-weight: 700; color: var(--tx-2); white-space: nowrap; }
 .result-bar  { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
 .result-bar-fill {
