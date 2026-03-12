@@ -25,14 +25,13 @@
   <div class="vote-content" id="vote-main">
 
     <!-- Login Screen (Kahoot style) -->
-    <div id="state-login" class="vote-status hidden" style="justify-content:center; gap:24px; padding:0 16px;">
-      <div style="font-size:48px; margin-bottom:12px;">👋</div>
-      <h1 style="font-size:28px; font-weight:900; line-height:1.2; letter-spacing:-0.5px; text-align:center;">歡迎加入問答！</h1>
-      <p style="color:var(--tx-3); margin-top:-16px; margin-bottom:8px;">請輸入你在遊戲中想使用的暱稱</p>
-      
-      <div style="width:100%; max-width:320px; display:flex; flex-direction:column; gap:12px;">
-        <input type="text" id="kahoot-name-input" class="form-input" placeholder="輸入暱稱..." style="height:56px; font-size:18px; font-weight:700; text-align:center; border-radius:12px;" maxlength="15">
-        <button class="btn btn-primary btn-full btn-xl" id="kahoot-join-btn" style="height:56px; font-size:18px;">加入遊戲</button>
+    <div id="state-login" class="vote-status vote-join-screen hidden">
+      <div class="vote-join-emoji">👋</div>
+      <h1 class="vote-join-title">歡迎加入問答！</h1>
+      <p class="vote-join-desc">請輸入你在遊戲中想使用的暱稱</p>
+      <div class="vote-join-form">
+        <input type="text" id="kahoot-name-input" class="form-input vote-join-input" placeholder="輸入暱稱..." maxlength="15">
+        <button class="btn btn-primary btn-full btn-xl vote-join-btn" id="kahoot-join-btn">加入遊戲</button>
       </div>
     </div>
 
@@ -103,19 +102,19 @@
     </div>
 
     <!-- Feedback: Correct -->
-    <div id="state-correct" class="vote-status hidden" style="background-color: var(--green-500); color: white; border-radius: var(--r-xl);">
-      <div style="font-size:64px; margin-bottom:12px; animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">🎉</div>
-      <div style="font-size:28px; font-weight:900;">答對了！</div>
-      <div style="font-size:16px; opacity:0.9; margin-top:8px;">太厲害了，繼續保持！</div>
-      <div style="margin-top:24px; font-size:13px; opacity:0.7;">請看大螢幕等待下一題</div>
+    <div id="state-correct" class="vote-status vote-feedback vote-feedback-correct hidden">
+      <div class="vote-feedback-emoji">🎉</div>
+      <div class="vote-feedback-title">答對了！</div>
+      <div class="vote-feedback-desc">太厲害了，繼續保持！</div>
+      <div class="vote-feedback-hint">請看大螢幕等待下一題</div>
     </div>
 
     <!-- Feedback: Wrong -->
-    <div id="state-wrong" class="vote-status hidden" style="background-color: var(--red-500); color: white; border-radius: var(--r-xl);">
-      <div style="font-size:64px; margin-bottom:12px; animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">😭</div>
-      <div style="font-size:28px; font-weight:900;">答錯了...</div>
-      <div style="font-size:16px; opacity:0.9; margin-top:8px;">別灰心，下一題再接再厲！</div>
-      <div style="margin-top:24px; font-size:13px; opacity:0.7;">請看大螢幕等待下一題</div>
+    <div id="state-wrong" class="vote-status vote-feedback vote-feedback-wrong hidden">
+      <div class="vote-feedback-emoji">😭</div>
+      <div class="vote-feedback-title">答錯了...</div>
+      <div class="vote-feedback-desc">別灰心，下一題再接再厲！</div>
+      <div class="vote-feedback-hint">請看大螢幕等待下一題</div>
     </div>
 
   </div>
@@ -133,6 +132,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="js/config.js"></script>
+<script src="js/utils.js"></script>
 <script src="js/vote.js"></script>
 </body>
 </html>

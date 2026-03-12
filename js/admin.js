@@ -8,20 +8,9 @@ let questionsUnsubscribe = null;
 let votesUnsubscribers = {};
 let qrCodeInstance = null;
 
-const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
 // ============================
 //  Utilities
 // ============================
-
-function showToast(message, type = 'default') {
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 3500);
-}
 
 function showModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 function hideModal(id)  { document.getElementById(id).classList.add('hidden'); }
@@ -32,12 +21,6 @@ function showSection(id) {
   const el = document.getElementById(id);
   el.classList.remove('hidden');
   if (id === 'poll-view') el.style.display = 'flex';
-}
-
-function escapeHtml(str) {
-  const d = document.createElement('div');
-  d.appendChild(document.createTextNode(str || ''));
-  return d.innerHTML;
 }
 
 function formatDate(ts) {

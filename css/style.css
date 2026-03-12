@@ -741,6 +741,34 @@ textarea.form-input { resize: vertical; min-height: 88px; line-height: 1.6; }
 .footer-copy { font-size: 13px; color: var(--tx-3); }
 
 /* ============================================================
+   VOTE FEEDBACK (答對 / 答錯)
+   ============================================================ */
+.vote-feedback {
+  border-radius: var(--r-xl);
+  color: #fff;
+}
+.vote-feedback-correct { background-color: var(--green-500); }
+.vote-feedback-wrong   { background-color: var(--red-500); }
+.vote-feedback-emoji {
+  font-size: 64px; margin-bottom: 12px;
+  animation: modalIn .4s cubic-bezier(.175,.885,.32,1.275);
+}
+.vote-feedback-title { font-size: 28px; font-weight: 900; }
+.vote-feedback-desc  { font-size: 16px; opacity: .9; margin-top: 8px; }
+.vote-feedback-hint  { margin-top: 24px; font-size: 13px; opacity: .7; }
+
+/* ============================================================
+   VOTE JOIN SCREEN (暱稱登入)
+   ============================================================ */
+.vote-join-screen { justify-content: center; gap: 24px; padding: 0 16px; }
+.vote-join-emoji  { font-size: 48px; margin-bottom: 12px; }
+.vote-join-title  { font-size: 28px; font-weight: 900; line-height: 1.2; letter-spacing: -.5px; text-align: center; }
+.vote-join-desc   { color: var(--tx-3); margin-top: -16px; margin-bottom: 8px; }
+.vote-join-form   { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 12px; }
+.vote-join-input  { height: 56px; font-size: 18px; font-weight: 700; text-align: center; border-radius: 12px; }
+.vote-join-btn    { height: 56px; font-size: 18px; }
+
+/* ============================================================
    Responsive
    ============================================================ */
 @media (max-width: 768px) {

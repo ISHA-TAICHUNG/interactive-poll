@@ -9,20 +9,9 @@ let selectedOptionId = null;
 let questionUnsubscribe = null;
 let votesUnsubscribe = null;
 
-const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
 // ============================
 //  Utilities
 // ============================
-
-function showToast(message, type = 'default') {
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
-}
 
 function showState(name) {
   ['loading','error','waiting','voted-waiting','voting','results','login','correct','wrong'].forEach(s => {
@@ -35,12 +24,6 @@ function showState(name) {
       el.classList.add('hidden');
     }
   });
-}
-
-function escapeHtml(str) {
-  const d = document.createElement('div');
-  d.appendChild(document.createTextNode(str || ''));
-  return d.innerHTML;
 }
 
 // ============================

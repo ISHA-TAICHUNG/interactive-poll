@@ -7,14 +7,6 @@ let currentQuestionId = null;
 let votesUnsubscribe = null;
 let qrGenerated = false;
 
-const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-function escapeHtml(str) {
-  const d = document.createElement('div');
-  d.appendChild(document.createTextNode(str || ''));
-  return d.innerHTML;
-}
-
 function showSection(id) {
   ['display-loading','display-waiting','display-question-view'].forEach(s => {
     const el = document.getElementById(s);
@@ -90,12 +82,12 @@ function listenToActive() {
 
 function displayQuestion(question) {
   document.getElementById('display-q-text').textContent = question.text;
-  renderBars(question.options, {}, 0);
+  renderBars(question, {}, 0);
   showSection('display-question-view');
 
   if (votesUnsubscribe) votesUnsubscribe();
 
-    votesUnsubscribe = db.collection('polls').doc(pollId)
+  votesUnsubscribe = db.collection('polls').doc(pollId)
       .collection('questions').doc(question.id).collection('votes')
       .onSnapshot(snap => {
         const counts = {};
