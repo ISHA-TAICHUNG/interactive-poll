@@ -25,7 +25,7 @@ function showToast(message, type = 'default') {
 }
 
 function showState(name) {
-  ['loading','error','waiting','voted-waiting','voting','results'].forEach(s => {
+  ['loading','error','waiting','voted-waiting','voting','results','login','correct','wrong'].forEach(s => {
     const el = document.getElementById(`state-${s}`);
     if (!el) return;
     if (s === name) {
@@ -63,8 +63,35 @@ function getMyChoice(qId)     { return localStorage.getItem(`ivp_choice_${pollId
 function saveMyChoice(qId, o) { localStorage.setItem(`ivp_choice_${pollId}_${qId}`, o); }
 
 // ============================
-//  Init
+//  Init & Login
 // ============================
+
+let voterName = '';
+
+function checkLogin() {
+  const savedName = localStorage.getItem('ivp_voter_name');
+  if (savedName) {
+    voterName = savedName;
+    return true;
+  }
+  return false;
+}
+
+document.getElementById('kahoot-join-btn').addEventListener('click', () => {
+  const input = document.getElementById('kahoot-name-input').value.trim();
+  if (!input) {
+    showToast('請輸入暱稱才能加入遊戲！', 'error');
+    return;
+  }
+  voterName = input;
+  localStorage.setItem('ivp_voter_name', input);
+  
+  if (currentQuestion) {
+    handleStateChange();
+  } else {
+    showState('waiting');
+  }
+});
 
 function init() {
   pollId = new URLSearchParams(window.location.search).get('poll');
@@ -73,7 +100,12 @@ function init() {
     document.getElementById('error-message').textContent = '缺少投票活動 ID，請確認連結是否完整。';
     return;
   }
-  loadPoll();
+  
+  if (!checkLogin()) {
+    showState('login');
+  } else {
+    loadPoll();
+  }
 }
 
 async function loadPoll() {
@@ -116,11 +148,7 @@ function listenToActiveQuestion() {
       selectedOptionId = null;
       if (votesUnsubscribe) { votesUnsubscribe(); votesUnsubscribe = null; }
 
-      if (hasVoted(activeQId)) {
-        showResults(activeQId, currentQuestion);
-      } else {
-        showVoting(currentQuestion);
-      }
+      handleStateChange();
     } catch (err) {
       showState('error');
     }
@@ -128,8 +156,35 @@ function listenToActiveQuestion() {
 }
 
 // ============================
-//  Voting UI
+//  State & Voting UI
 // ============================
+
+function handleStateChange() {
+  if (!checkLogin()) {
+    showState('login');
+    return;
+  }
+  if (!currentQuestion) return;
+
+  const qId = currentQuestion.id;
+  const votedOptionId = getMyChoice(qId);
+  const correctId = currentQuestion.correctOptionId;
+
+  if (currentQuestion.isActive) {
+    if (votedOptionId) showState('voted-waiting');
+    else showVoting(currentQuestion);
+  } else {
+    if (votedOptionId && correctId) {
+      if (votedOptionId === correctId) showState('correct');
+      else showState('wrong');
+      
+      // 在背景載入結果，等使用者自己看投影，或者也可以設計過幾秒切換
+      setTimeout(() => { if (currentQuestion && !currentQuestion.isActive && currentQuestion.id === qId) showResults(qId, currentQuestion); }, 3500);
+    } else {
+      showResults(qId, currentQuestion);
+    }
+  }
+}
 
 function showVoting(question) {
   showState('voting');
@@ -172,18 +227,24 @@ async function submitVote() {
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;width:18px;height:18px;margin:0 auto;"></div>';
 
-  const voterToken = getVoterToken();
   const qId = currentQuestion.id;
+  const voterToken = getVoterToken();
+  const finalName = voterName || localStorage.getItem('ivp_voter_name') || '匿名玩家';
 
   try {
     await db.collection('polls').doc(pollId)
       .collection('questions').doc(qId)
       .collection('votes').doc(voterToken)
-      .set({ optionId: selectedOptionId, createdAt: firebase.firestore.FieldValue.serverTimestamp(), voterToken });
+      .set({ 
+        optionId: selectedOptionId, 
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
+        voterToken,
+        name: finalName 
+      });
     markVoted(qId);
     saveMyChoice(qId, selectedOptionId);
-    showResults(qId, currentQuestion);
-    showToast('投票成功！感謝您的參與', 'success');
+    handleStateChange();
+    showToast('答案已送出！', 'success');
   } catch (err) {
     showToast('投票失敗：' + err.message, 'error');
     btn.disabled = false;
@@ -199,7 +260,9 @@ function showResults(qId, question) {
   showState('results');
   document.getElementById('results-question-text').textContent = question.text;
   const myChoice = getMyChoice(qId);
+  const correctId = question.correctOptionId;
 
+  if (votesUnsubscribe) votesUnsubscribe();
   votesUnsubscribe = db.collection('polls').doc(pollId)
     .collection('questions').doc(qId).collection('votes')
     .onSnapshot(snap => {
@@ -213,7 +276,7 @@ function showResults(qId, question) {
       document.getElementById('results-list').innerHTML = question.options.map((opt, i) => {
         const c = counts[opt.id] || 0;
         const pct = total > 0 ? Math.round((c / total) * 100) : 0;
-        const isWinner = c === maxVotes && c > 0;
+        const isWinner = correctId ? opt.id === correctId : c === maxVotes && c > 0;
         const isMe = opt.id === myChoice;
         return `
           <div class="result-item ${isWinner ? 'winner' : ''}">

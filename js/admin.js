@@ -269,7 +269,11 @@ function addOptionRow(idx) {
   const letter = LETTERS[i] || String(i + 1);
   const row = document.createElement('div');
   row.className = 'opt-input-row';
+  row.style.alignItems = 'center';
+  
+  // 加上單選框 (name="correct-option")
   row.innerHTML = `
+    <input type="radio" name="correct-option" value="${i}" title="設為正確答案" style="width:18px; height:18px; margin-right:4px; cursor:pointer;" ${i === 0 ? 'checked' : ''}>
     <div class="opt-input-badge">${letter}</div>
     <input type="text" class="form-input option-input" placeholder="選項 ${letter}" style="flex:1;">
     <button type="button" class="opt-remove-btn" onclick="removeOptRow(this)">✕</button>`;
@@ -284,7 +288,8 @@ window.removeOptRow = function(btn) {
   Array.from(list.children).forEach((row, i) => {
     const letter = LETTERS[i] || String(i + 1);
     row.querySelector('.opt-input-badge').textContent = letter;
-    row.querySelector('input').placeholder = `選項 ${letter}`;
+    row.querySelector('input[type="text"]').placeholder = `選項 ${letter}`;
+    row.querySelector('input[type="radio"]').value = i;
   });
   updateRemoveBtns();
 };
@@ -316,8 +321,19 @@ document.getElementById('confirm-add-question').addEventListener('click', async 
   btn.disabled = true; btn.textContent = '新增中...';
   try {
     const snap = await db.collection('polls').doc(currentPollId).collection('questions').get();
+    
+    // 找出正確解答 ID
+    const correctRadio = document.querySelector('input[name="correct-option"]:checked');
+    let correctOptionId = null;
+    if (correctRadio) {
+      const selectedIndex = parseInt(correctRadio.value, 10);
+      if (options[selectedIndex]) {
+        correctOptionId = options[selectedIndex].id;
+      }
+    }
+
     await db.collection('polls').doc(currentPollId).collection('questions').add({
-      text, options, order: snap.size, isActive: false,
+      text, options, order: snap.size, isActive: false, correctOptionId,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     hideModal('modal-add-question');
@@ -370,40 +386,67 @@ function renderQuestions(pollId, docs) {
       </div>
       <div class="q-card-body">
         <div class="q-text">${escapeHtml(q.text)}</div>
-        <div class="opt-list" id="opts-${qId}">${renderOpts(q.options, {}, 0)}</div>
+        <div class="q-tag" style="font-size:12px; margin-bottom:12px; color:var(--tx-3);">
+          解答：${q.correctOptionId ? escapeHtml(q.options.find(o => o.id === q.correctOptionId)?.text || '無') : '無標準答案'}
+        </div>
+        <div class="opt-list" id="opts-${qId}">${renderOpts(q.options, {}, 0, {}, q.correctOptionId)}</div>
       </div>`;
     wrap.appendChild(card);
-    listenToVotes(pollId, qId, q.options);
+    listenToVotes(pollId, qId, q);
   });
 
   container.appendChild(wrap);
 }
 
-function renderOpts(options, counts, total) {
+function renderOpts(options, counts, total, votersByOpt = {}, correctOptionId = null) {
   return options.map((opt, i) => {
     const c = counts[opt.id] || 0;
     const pct = total > 0 ? Math.round((c / total) * 100) : 0;
+    
+    const isCorrect = correctOptionId === opt.id;
+    
+    const voters = votersByOpt[opt.id] || [];
+    const votersHtml = voters.length > 0 
+      ? `<div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">` + 
+        voters.map(n => `<span style="background:#F1F5F9; color:#475569; padding:2px 8px; border-radius:12px; font-size:12px;">${escapeHtml(n)}</span>`).join('') + 
+        `</div>`
+      : '';
+
     return `
-      <div class="opt-row">
-        <div class="opt-letter">${opt.letter || LETTERS[i]}</div>
-        <div class="opt-label">${escapeHtml(opt.text)}</div>
-        <div class="opt-bar-wrap">
-          <div class="opt-bar"><div class="opt-bar-fill" style="width:${pct}%"></div></div>
+      <div class="opt-row" style="flex-direction:column; align-items:flex-start;">
+        <div style="display:flex; width:100%; align-items:center;">
+          ${isCorrect ? `<span style="color:#10B981; margin-right:6px; font-weight:800;" title="正確答案">✓</span>` : ''}
+          <div class="opt-letter">${opt.letter || LETTERS[i]}</div>
+          <div class="opt-label">${escapeHtml(opt.text)}</div>
+          <div class="opt-bar-wrap">
+            <div class="opt-bar"><div class="opt-bar-fill" style="width:${pct}%; ${isCorrect ? 'background:#10B981;' : ''}"></div></div>
+          </div>
+          <div class="opt-votes">${c} 票 · ${pct}%</div>
         </div>
-        <div class="opt-votes">${c} 票 · ${pct}%</div>
+        ${votersHtml}
       </div>`;
   }).join('');
 }
 
-function listenToVotes(pollId, qId, options) {
+function listenToVotes(pollId, qId, qDocData) {
   if (votesUnsubscribers[qId]) votesUnsubscribers[qId]();
   votesUnsubscribers[qId] = db.collection('polls').doc(pollId)
     .collection('questions').doc(qId).collection('votes')
     .onSnapshot(snap => {
       const counts = {};
-      snap.docs.forEach(d => { const o = d.data().optionId; counts[o] = (counts[o] || 0) + 1; });
+      const votersByOpt = {};
+      
+      snap.docs.forEach(d => { 
+        const data = d.data();
+        const o = data.optionId; 
+        counts[o] = (counts[o] || 0) + 1; 
+        
+        if (!votersByOpt[o]) votersByOpt[o] = [];
+        if (data.name) votersByOpt[o].push(data.name);
+      });
+      
       const el = document.getElementById(`opts-${qId}`);
-      if (el) el.innerHTML = renderOpts(options, counts, snap.size);
+      if (el) el.innerHTML = renderOpts(qDocData.options, counts, snap.size, votersByOpt, qDocData.correctOptionId);
     });
 }
 

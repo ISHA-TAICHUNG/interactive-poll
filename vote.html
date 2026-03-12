@@ -24,6 +24,18 @@
   <!-- Content wrapper -->
   <div class="vote-content" id="vote-main">
 
+    <!-- Login Screen (Kahoot style) -->
+    <div id="state-login" class="vote-status hidden" style="justify-content:center; gap:24px; padding:0 16px;">
+      <div style="font-size:48px; margin-bottom:12px;">👋</div>
+      <h1 style="font-size:28px; font-weight:900; line-height:1.2; letter-spacing:-0.5px; text-align:center;">歡迎加入問答！</h1>
+      <p style="color:var(--tx-3); margin-top:-16px; margin-bottom:8px;">請輸入你在遊戲中想使用的暱稱</p>
+      
+      <div style="width:100%; max-width:320px; display:flex; flex-direction:column; gap:12px;">
+        <input type="text" id="kahoot-name-input" class="form-input" placeholder="輸入暱稱..." style="height:56px; font-size:18px; font-weight:700; text-align:center; border-radius:12px;" maxlength="15">
+        <button class="btn btn-primary btn-full btn-xl" id="kahoot-join-btn" style="height:56px; font-size:18px;">加入遊戲</button>
+      </div>
+    </div>
+
     <!-- Loading -->
     <div id="state-loading" class="vote-status">
       <div class="vote-status-icon vs-loading">
@@ -60,14 +72,15 @@
     <div id="state-voting" class="hidden" style="width:100%;display:flex;flex-direction:column;gap:14px;">
       <div class="vote-q-card">
         <div class="vote-q-hd">
-          <div class="vote-q-label" id="question-label">投票題目</div>
+          <div class="vote-q-label" id="question-label">問答題目</div>
           <h2 class="vote-q-text" id="question-text-display"></h2>
         </div>
         <div class="vote-options" id="vote-options"></div>
-        <div class="vote-submit-wrap" style="padding:0 12px 12px;">
+        <div class="vote-submit-wrap" style="padding:0 12px 12px; display:flex; flex-direction:column; gap:8px;">
+          <!-- 移除選填暱稱框，因為登入時已取得 -->
           <button class="btn btn-primary btn-full btn-lg" id="submit-vote-btn" disabled
             style="border-radius:var(--r-lg);font-size:16px;height:52px;">
-            確認投票
+            確認提交
           </button>
         </div>
       </div>
@@ -77,7 +90,7 @@
     <div id="state-results" class="hidden" style="width:100%;display:flex;flex-direction:column;gap:14px;">
       <div class="results-card">
         <div class="results-hd">
-          <div class="results-hd-label">投票結果</div>
+          <div class="results-hd-label">統計結果</div>
           <div class="results-hd-title" id="results-question-text"></div>
           <div class="results-hd-total" id="results-total-votes">共 0 票</div>
         </div>
@@ -85,8 +98,24 @@
       </div>
 
       <div style="text-align:center;padding:8px 0;">
-        <div style="font-size:13px;color:var(--tx-3);">您的投票已記錄 ✓ &nbsp;·&nbsp; 等待下一題...</div>
+        <div style="font-size:13px;color:var(--tx-3);">等待下一題...</div>
       </div>
+    </div>
+
+    <!-- Feedback: Correct -->
+    <div id="state-correct" class="vote-status hidden" style="background-color: var(--green-500); color: white; border-radius: var(--r-xl);">
+      <div style="font-size:64px; margin-bottom:12px; animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">🎉</div>
+      <div style="font-size:28px; font-weight:900;">答對了！</div>
+      <div style="font-size:16px; opacity:0.9; margin-top:8px;">太厲害了，繼續保持！</div>
+      <div style="margin-top:24px; font-size:13px; opacity:0.7;">請看大螢幕等待下一題</div>
+    </div>
+
+    <!-- Feedback: Wrong -->
+    <div id="state-wrong" class="vote-status hidden" style="background-color: var(--red-500); color: white; border-radius: var(--r-xl);">
+      <div style="font-size:64px; margin-bottom:12px; animation: modalIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">😭</div>
+      <div style="font-size:28px; font-weight:900;">答錯了...</div>
+      <div style="font-size:16px; opacity:0.9; margin-top:8px;">別灰心，下一題再接再厲！</div>
+      <div style="margin-top:24px; font-size:13px; opacity:0.7;">請看大螢幕等待下一題</div>
     </div>
 
   </div>

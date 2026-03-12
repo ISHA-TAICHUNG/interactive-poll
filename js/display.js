@@ -95,33 +95,61 @@ function displayQuestion(question) {
 
   if (votesUnsubscribe) votesUnsubscribe();
 
-  votesUnsubscribe = db.collection('polls').doc(pollId)
-    .collection('questions').doc(question.id).collection('votes')
-    .onSnapshot(snap => {
-      const counts = {};
-      snap.docs.forEach(d => { const o = d.data().optionId; counts[o] = (counts[o] || 0) + 1; });
-      document.getElementById('display-total-count').textContent = snap.size;
-      renderBars(question.options, counts, snap.size);
-    });
+    votesUnsubscribe = db.collection('polls').doc(pollId)
+      .collection('questions').doc(question.id).collection('votes')
+      .onSnapshot(snap => {
+        const counts = {};
+        const votersByOpt = {}; // 新增：用來存放每個選項的投票者暱稱
+        
+        snap.docs.forEach(d => { 
+          const data = d.data();
+          const o = data.optionId; 
+          counts[o] = (counts[o] || 0) + 1; 
+          
+          if (!votersByOpt[o]) votersByOpt[o] = [];
+          if (data.name) votersByOpt[o].push(data.name);
+        });
+        
+        document.getElementById('display-total-count').textContent = snap.size;
+        renderBars(question, counts, snap.size, votersByOpt);
+      });
 }
 
-function renderBars(options, counts, total) {
+function renderBars(question, counts, total, votersByOpt = {}) {
+  const options = question.options;
+  const correctId = question.correctOptionId;
   const maxVotes = Math.max(...Object.values(counts), 0);
+  
   document.getElementById('display-results').innerHTML = options.map((opt, i) => {
     const c = counts[opt.id] || 0;
     const pct = total > 0 ? Math.round((c / total) * 100) : 0;
-    const isWinner = c === maxVotes && c > 0;
+    
+    // 依據是否設定標準答案來決定 isWinner 發光特效
+    const isWinner = correctId ? opt.id === correctId : c === maxVotes && c > 0;
+    
+    // 生成該選項的暱稱標籤 HTML
+    const voters = votersByOpt[opt.id] || [];
+    const votersHtml = voters.length > 0 
+      ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; font-size:14px; color:var(--tx-2);">`
+        + voters.map(name => `<span style="background:rgba(255,255,255,0.2); padding:4px 10px; border-radius:12px;">${escapeHtml(name)}</span>`).join('')
+        + `</div>`
+      : '';
+
     return `
-      <div class="display-res-item">
-        <div class="display-res-label">${opt.letter || LETTERS[i]}. ${escapeHtml(opt.text)}</div>
+      <div class="display-res-item" style="padding-bottom: 24px; transition: opacity 0.5s;">
+        <div class="display-res-label">
+          ${isWinner && correctId && !question.isActive ? '<span style="color:#6EE7B7; margin-right:6px;">✓</span>' : ''}
+          ${opt.letter || LETTERS[i]}. ${escapeHtml(opt.text)}
+        </div>
         <div class="display-res-bar-wrap">
-          <div class="display-res-bar">
+          <div class="display-res-bar" style="${!isWinner && !question.isActive && correctId ? 'opacity:0.3;' : ''}">
             <div class="display-res-bar-fill ${isWinner ? 'winner' : ''}" style="width:${pct}%">
               ${pct > 8 ? pct + '%' : ''}
             </div>
           </div>
         </div>
         <div class="display-res-count">${c}</div>
+        ${votersHtml}
       </div>`;
   }).join('');
 }

@@ -6,12 +6,12 @@
 // ============================================================
 
 const FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAW3XoP9WjmvzHp7pC__kbPljVQs-nEXlE",
+    authDomain: "interactive-poll-53052.firebaseapp.com",
+    projectId: "interactive-poll-53052",
+    storageBucket: "interactive-poll-53052.firebasestorage.app",
+    messagingSenderId: "636782447827",
+    appId: "1:636782447827:web:451094a238b2eabc015826"
 };
 
 // ============================================================
