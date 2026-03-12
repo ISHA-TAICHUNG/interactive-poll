@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>互動投票系統 · Interactive Poll</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="landing-root">
+
+  <!-- Nav -->
+  <nav class="landing-nav">
+    <div class="landing-nav-brand">
+      <div class="landing-nav-icon">📊</div>
+      互動投票
+    </div>
+    <div style="flex:1"></div>
+    <a href="admin.html" class="btn btn-primary btn-sm">管理後台 →</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-kicker">✦ 即時 · 匿名 · 簡單</div>
+    <h1 class="hero-title">
+      讓每個聲音<br><span class="hl">都被聽見</span>
+    </h1>
+    <p class="hero-desc">
+      掃描 QR Code 即可參與投票，無需下載 App 或建立帳號。
+      結果即時顯示，讓互動更有溫度。
+    </p>
+    <div class="hero-cta">
+      <a href="admin.html" class="btn btn-primary btn-xl btn-pill">
+        🚀 建立投票活動
+      </a>
+      <a href="#features" class="btn btn-ghost btn-xl btn-pill">
+        了解功能
+      </a>
+    </div>
+
+    <!-- Demo card preview -->
+    <div style="margin-top:52px;max-width:480px;margin-left:auto;margin-right:auto;">
+      <div style="background:var(--surface);border:1px solid var(--bd);border-radius:var(--r-xl);box-shadow:var(--sh-lg);overflow:hidden;">
+        <!-- Mock vote question -->
+        <div style="background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff;padding:18px 20px 16px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;opacity:.7;text-transform:uppercase;margin-bottom:8px;">投票題目</div>
+          <div style="font-size:17px;font-weight:700;">您最常使用哪種開會工具？</div>
+        </div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#EEF2FF;border:1.5px solid #4F46E5;border-radius:12px;box-shadow:0 0 0 3px rgba(79,70,229,.15);">
+            <div style="width:32px;height:32px;background:#4F46E5;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">A</div>
+            <span style="font-size:14px;font-weight:600;color:#4F46E5;flex:1;">Google Meet</span>
+            <span style="font-size:18px;">✓</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#F7F8FC;border:1.5px solid #E2E8F0;border-radius:12px;">
+            <div style="width:32px;height:32px;background:#fff;border:1.5px solid #E2E8F0;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#94A3B8;flex-shrink:0;">B</div>
+            <span style="font-size:14px;font-weight:500;color:#0F172A;flex:1;">Zoom</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#F7F8FC;border:1.5px solid #E2E8F0;border-radius:12px;">
+            <div style="width:32px;height:32px;background:#fff;border:1.5px solid #E2E8F0;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#94A3B8;flex-shrink:0;">C</div>
+            <span style="font-size:14px;font-weight:500;color:#0F172A;flex:1;">Microsoft Teams</span>
+          </div>
+          <div style="padding:4px;">
+            <button style="width:100%;padding:12px;background:#4F46E5;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">確認投票</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="feat-section" id="features" style="background:var(--bg);">
+    <div class="feat-inner">
+      <div class="sec-kicker">功能特色</div>
+      <h2 class="sec-title">一切設計，都為了更好的互動</h2>
+      <p class="sec-desc">簡單易用，功能完整，從建立到投票只需幾分鐘</p>
+
+      <div class="features-grid">
+        <div class="feat-card">
+          <div class="feat-icon">📱</div>
+          <div class="feat-title">QR Code 無記名參與</div>
+          <p class="feat-desc">掃描即可參與，無需下載 App 或註冊帳號，真正的匿名投票體驗。</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">⚡</div>
+          <div class="feat-title">即時同步更新</div>
+          <p class="feat-desc">投票結果毫秒同步，所有參與者同時看到最新數據，無需手動刷新。</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🎛️</div>
+          <div class="feat-title">管理者控制台</div>
+          <p class="feat-desc">直觀的管理介面，輕鬆建立多個投票活動、新增題目與選項。</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">📊</div>
+          <div class="feat-title">視覺化統計</div>
+          <p class="feat-desc">即時長條圖清楚呈現各選項票數與百分比，一目了然。</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🖥️</div>
+          <div class="feat-title">投影顯示模式</div>
+          <p class="feat-desc">專為大螢幕設計的即時結果頁，適合在課堂或會議中投影展示。</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🔒</div>
+          <div class="feat-title">防重複投票</div>
+          <p class="feat-desc">每位參與者同一題目只能投票一次，確保結果公平可靠。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Steps -->
+  <section class="steps-section">
+    <div class="steps-inner">
+      <div class="sec-kicker">使用流程</div>
+      <h2 class="sec-title">三步驟，輕鬆開始</h2>
+      <p class="sec-desc">從建立到收票，最快 2 分鐘完成設定</p>
+
+      <div class="steps-grid" style="margin-top:40px;">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-title">管理者建立投票</div>
+          <p class="step-desc">登入管理後台，建立活動並新增題目與選項，完全自訂。</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-title">分享 QR Code</div>
+          <p class="step-desc">自動產生的 QR Code 投影在螢幕上，或傳送給參與者。</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-title">即時收票看結果</div>
+          <p class="step-desc">參與者掃碼投票，結果立即呈現，互動輕鬆又有趣。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2 class="cta-title">立即建立您的投票活動</h2>
+    <p class="cta-desc">免費使用，無需信用卡，幾分鐘內開始互動</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="admin.html" class="btn btn-white btn-xl btn-pill">
+        🔐 管理者登入
+      </a>
+      <a href="#features" class="btn btn-outline-white btn-xl btn-pill">
+        了解更多
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-copy">互動投票系統 &copy; 2025 · 以 Firebase 即時資料庫驅動</div>
+    <div style="display:flex;gap:16px;">
+      <a href="admin.html" style="font-size:13px;color:var(--tx-3);">管理後台</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

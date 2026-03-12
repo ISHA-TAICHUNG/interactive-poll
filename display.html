@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>即時顯示 · 互動投票系統</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="display-root">
+
+  <!-- Nav -->
+  <nav class="display-nav">
+    <div class="display-brand">
+      <div class="display-brand-icon">📊</div>
+      <div class="display-poll-name" id="display-poll-name">投票活動</div>
+    </div>
+    <div class="display-live-pill">
+      <div class="display-live-dot"></div>
+      LIVE
+    </div>
+  </nav>
+
+  <!-- Body -->
+  <div class="display-body" id="display-body">
+
+    <!-- Loading -->
+    <div id="display-loading" class="display-idle" style="flex:1;">
+      <div class="display-idle-icon">⏳</div>
+      <div class="display-idle-title">載入中...</div>
+    </div>
+
+    <!-- Idle (no active question) -->
+    <div id="display-waiting" class="display-idle hidden" style="flex:1;">
+      <div class="display-idle-icon" style="animation:iconPulse 3s ease-in-out infinite;">⏳</div>
+      <div class="display-idle-title">等待管理者開放題目</div>
+      <div class="display-idle-desc">請參與者先掃描右側 QR Code 進入投票頁面</div>
+    </div>
+
+    <!-- Active question view -->
+    <div id="display-question-view" class="hidden" style="display:none;flex:1;flex-direction:row;">
+
+      <!-- Main: question + results -->
+      <div class="display-main">
+        <div>
+          <div class="display-q-label" id="display-q-label">正在投票</div>
+          <div class="display-q-text" id="display-q-text"></div>
+        </div>
+        <div class="display-results" id="display-results"></div>
+      </div>
+
+      <!-- Sidebar: votes count + QR -->
+      <div class="display-sidebar">
+        <div class="display-votes-big">
+          <div class="display-votes-num" id="display-total-count">0</div>
+          <div class="display-votes-lbl">票數</div>
+        </div>
+        <div class="display-qr-frame">
+          <div id="display-qrcode"></div>
+          <div class="display-qr-hint">掃碼參與投票</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/display.js"></script>
+</body>
+</html>

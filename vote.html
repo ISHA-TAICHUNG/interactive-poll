@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>參與投票 · 互動投票系統</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="vote-root">
+
+  <!-- Top bar -->
+  <header class="vote-topbar">
+    <div class="vote-topbar-icon">📊</div>
+    <div class="vote-topbar-title" id="vote-page-title">互動投票</div>
+    <div style="margin-left:auto;">
+      <span class="badge badge-live">
+        <span style="width:6px;height:6px;border-radius:50%;background:#10B981;"></span>
+        直播中
+      </span>
+    </div>
+  </header>
+
+  <!-- Content wrapper -->
+  <div class="vote-content" id="vote-main">
+
+    <!-- Loading -->
+    <div id="state-loading" class="vote-status">
+      <div class="vote-status-icon vs-loading">
+        <div class="spinner spinner-lg"></div>
+      </div>
+      <div class="vote-status-title">載入中</div>
+      <div class="vote-status-desc">正在連線到投票活動...</div>
+    </div>
+
+    <!-- Error -->
+    <div id="state-error" class="vote-status hidden">
+      <div class="vote-status-icon vs-error">❌</div>
+      <div class="vote-status-title">無法載入</div>
+      <p class="vote-status-desc" id="error-message">找不到此投票活動，請確認連結是否正確。</p>
+      <a href="index.html" class="btn btn-ghost btn-sm btn-pill" style="margin-top:8px;">← 返回首頁</a>
+    </div>
+
+    <!-- Waiting (no active question) -->
+    <div id="state-waiting" class="vote-status hidden">
+      <div class="vote-status-icon vs-waiting pulse">⏳</div>
+      <div class="vote-status-title">等待題目開放</div>
+      <p class="vote-status-desc">請稍候，管理者即將開放投票題目...</p>
+      <div style="margin-top:12px;font-size:12px;color:var(--tx-3);">頁面將自動更新</div>
+    </div>
+
+    <!-- Already voted waiting for next question -->
+    <div id="state-voted-waiting" class="vote-status hidden">
+      <div class="vote-status-icon vs-voted">✅</div>
+      <div class="vote-status-title">已記錄您的答案</div>
+      <p class="vote-status-desc">感謝參與！等待下一個題目...</p>
+    </div>
+
+    <!-- Voting -->
+    <div id="state-voting" class="hidden" style="width:100%;display:flex;flex-direction:column;gap:14px;">
+      <div class="vote-q-card">
+        <div class="vote-q-hd">
+          <div class="vote-q-label" id="question-label">投票題目</div>
+          <h2 class="vote-q-text" id="question-text-display"></h2>
+        </div>
+        <div class="vote-options" id="vote-options"></div>
+        <div class="vote-submit-wrap" style="padding:0 12px 12px;">
+          <button class="btn btn-primary btn-full btn-lg" id="submit-vote-btn" disabled
+            style="border-radius:var(--r-lg);font-size:16px;height:52px;">
+            確認投票
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results (after voting) -->
+    <div id="state-results" class="hidden" style="width:100%;display:flex;flex-direction:column;gap:14px;">
+      <div class="results-card">
+        <div class="results-hd">
+          <div class="results-hd-label">投票結果</div>
+          <div class="results-hd-title" id="results-question-text"></div>
+          <div class="results-hd-total" id="results-total-votes">共 0 票</div>
+        </div>
+        <div class="results-body" id="results-list"></div>
+      </div>
+
+      <div style="text-align:center;padding:8px 0;">
+        <div style="font-size:13px;color:var(--tx-3);">您的投票已記錄 ✓ &nbsp;·&nbsp; 等待下一題...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center;padding:16px;font-size:12px;color:var(--tx-3);">
+    無記名投票 · 結果即時同步
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/vote.js"></script>
+</body>
+</html>

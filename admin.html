@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理後台 · 互動投票系統</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============================================================
+     LOGIN PAGE
+     ============================================================ -->
+<div id="login-page" class="login-root hidden">
+  <div class="login-box">
+
+    <div class="login-brand">
+      <div class="login-icon">📊</div>
+      <div>
+        <div class="login-title">互動投票系統</div>
+        <div class="login-sub">管理者登入</div>
+      </div>
+    </div>
+
+    <div id="login-error" class="login-err hidden" style="margin-bottom:16px;"></div>
+
+    <form id="login-form" class="flex flex-col gap-4">
+      <div class="form-group">
+        <label class="form-label" for="email">電子郵件</label>
+        <input type="email" id="email" class="form-input" placeholder="admin@example.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">密碼</label>
+        <input type="password" id="password" class="form-input" placeholder="輸入密碼" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg btn-full" id="login-btn" style="margin-top:4px;">
+        登入
+      </button>
+    </form>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--bd);text-align:center;">
+      <p style="font-size:12px;color:var(--tx-3);margin-bottom:12px;">
+        尚未設定帳號？請在 Firebase Console 的 Authentication 建立使用者
+      </p>
+      <a href="index.html" style="font-size:13px;color:var(--primary);font-weight:500;">← 返回首頁</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     ADMIN APP
+     ============================================================ -->
+<div id="admin-app" class="hidden">
+
+  <!-- Top Nav -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-logo">📊</div>
+      互動投票系統
+    </div>
+    <div class="nav-sep"></div>
+    <span class="nav-user" id="user-email"></span>
+    <button class="btn btn-ghost btn-sm" id="logout-btn">登出</button>
+  </nav>
+
+  <div class="app-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-label">投票活動</div>
+        <button class="btn btn-primary btn-sm btn-full" id="create-poll-btn">+ 新增活動</button>
+      </div>
+      <div class="polls-list" id="polls-list">
+        <div class="flex items-center gap-3 p-4" style="padding:20px;">
+          <div class="spinner"></div>
+          <span style="font-size:13px;color:var(--tx-3);">載入中...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main" id="admin-content">
+
+      <!-- Welcome Panel -->
+      <div id="welcome-panel" class="welcome-wrap">
+        <div class="welcome-icon">🗳️</div>
+        <div class="welcome-title">歡迎使用互動投票系統</div>
+        <p class="welcome-desc">從左側選擇投票活動，或新增活動開始使用。</p>
+        <button class="btn btn-primary btn-lg btn-pill" id="welcome-create-btn" style="margin-top:4px;">
+          + 新增第一個投票活動
+        </button>
+      </div>
+
+      <!-- Poll View -->
+      <div id="poll-view" class="hidden" style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Poll header -->
+        <div class="flex items-center gap-3 flex-wrap poll-hd">
+          <div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tx-3);margin-bottom:3px;">投票活動</div>
+            <h2 class="poll-hd-title" id="poll-title-display"></h2>
+          </div>
+          <div class="poll-hd-actions">
+            <button class="btn btn-ghost btn-sm" id="open-display-btn">🖥️ 投影模式</button>
+            <button class="btn btn-danger btn-sm" id="delete-poll-btn">🗑️ 刪除活動</button>
+          </div>
+        </div>
+
+        <!-- QR Card -->
+        <div class="qr-card">
+          <div class="qr-frame">
+            <div id="qrcode-container"></div>
+            <div class="qr-link" id="qr-url-text"></div>
+          </div>
+          <div>
+            <div class="qr-info-title">📱 掃描 QR Code 參與投票</div>
+            <ul class="qr-checklist">
+              <li><span class="qr-check-dot">✓</span>無需帳號，即可匿名參與</li>
+              <li><span class="qr-check-dot">✓</span>手機掃描 QR Code 進入</li>
+              <li><span class="qr-check-dot">✓</span>投票結果即時同步顯示</li>
+              <li><span class="qr-check-dot">✓</span>每個題目只能投票一次</li>
+            </ul>
+            <div class="qr-actions">
+              <button class="btn btn-secondary btn-sm" id="copy-url-btn">📋 複製連結</button>
+              <button class="btn btn-ghost btn-sm" id="download-qr-btn">⬇️ 下載 QR Code</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Questions Card -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-title">題目管理</div>
+            <button class="btn btn-primary btn-sm" id="add-question-btn">+ 新增題目</button>
+          </div>
+          <div class="card-body" style="padding:16px;">
+            <div id="questions-container">
+              <div class="flex items-center gap-3" style="padding:16px;">
+                <div class="spinner"></div>
+                <span style="font-size:13px;color:var(--tx-3);">載入題目中...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- /poll-view -->
+
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Create Poll
+     ============================================================ -->
+<div id="modal-create-poll" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-hd">新增投票活動</div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">活動名稱</label>
+        <input type="text" id="new-poll-title" class="form-input" placeholder="例：2025 年會員大會投票">
+      </div>
+      <div class="form-group">
+        <label class="form-label">活動描述（選填）</label>
+        <textarea id="new-poll-desc" class="form-input" placeholder="簡短說明此投票活動的用途" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" id="cancel-create-poll">取消</button>
+      <button class="btn btn-primary" id="confirm-create-poll">建立活動</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Add Question
+     ============================================================ -->
+<div id="modal-add-question" class="modal-overlay hidden">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-hd">新增投票題目</div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">題目內容</label>
+        <textarea id="new-question-text" class="form-input" placeholder="請輸入您的問題..." rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">選項</label>
+        <div class="opt-input-list" id="options-input-list"></div>
+        <button type="button" class="btn btn-ghost btn-sm" id="add-option-btn" style="margin-top:8px;align-self:flex-start;">+ 新增選項</button>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" id="cancel-add-question">取消</button>
+      <button class="btn btn-primary" id="confirm-add-question">新增題目</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- QR Code -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- App -->
+<script src="js/config.js"></script>
+<script src="js/admin.js"></script>
+
+</body>
+</html>

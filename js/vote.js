@@ -1,0 +1,238 @@
+// ============================================================
+//  Voting Page Logic
+// ============================================================
+
+let pollId = null;
+let pollData = null;
+let currentQuestion = null;
+let selectedOptionId = null;
+let questionUnsubscribe = null;
+let votesUnsubscribe = null;
+
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+// ============================
+//  Utilities
+// ============================
+
+function showToast(message, type = 'default') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function showState(name) {
+  ['loading','error','waiting','voted-waiting','voting','results'].forEach(s => {
+    const el = document.getElementById(`state-${s}`);
+    if (!el) return;
+    if (s === name) {
+      el.classList.remove('hidden');
+      if (s === 'voting' || s === 'results') el.style.display = 'flex';
+    } else {
+      el.classList.add('hidden');
+    }
+  });
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(str || ''));
+  return d.innerHTML;
+}
+
+// ============================
+//  Anonymous Voter Token
+// ============================
+
+function getVoterToken() {
+  const key = 'ivp_voter_token';
+  let token = localStorage.getItem(key);
+  if (!token) {
+    token = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem(key, token);
+  }
+  return token;
+}
+
+function hasVoted(qId)        { return localStorage.getItem(`ivp_voted_${pollId}_${qId}`) === '1'; }
+function markVoted(qId)       { localStorage.setItem(`ivp_voted_${pollId}_${qId}`, '1'); }
+function getMyChoice(qId)     { return localStorage.getItem(`ivp_choice_${pollId}_${qId}`); }
+function saveMyChoice(qId, o) { localStorage.setItem(`ivp_choice_${pollId}_${qId}`, o); }
+
+// ============================
+//  Init
+// ============================
+
+function init() {
+  pollId = new URLSearchParams(window.location.search).get('poll');
+  if (!pollId) {
+    showState('error');
+    document.getElementById('error-message').textContent = '缺少投票活動 ID，請確認連結是否完整。';
+    return;
+  }
+  loadPoll();
+}
+
+async function loadPoll() {
+  showState('loading');
+  try {
+    const doc = await db.collection('polls').doc(pollId).get();
+    if (!doc.exists) { showState('error'); return; }
+    pollData = doc.data();
+    document.getElementById('vote-page-title').textContent = pollData.title || '互動投票';
+    document.title = `${pollData.title || '投票'} · 互動投票系統`;
+    listenToActiveQuestion();
+  } catch (err) {
+    showState('error');
+    document.getElementById('error-message').textContent = '載入失敗：' + err.message;
+  }
+}
+
+// ============================
+//  Real-time listener
+// ============================
+
+function listenToActiveQuestion() {
+  questionUnsubscribe = db.collection('polls').doc(pollId).onSnapshot(async doc => {
+    if (!doc.exists) { showState('error'); return; }
+    const activeQId = doc.data().activeQuestionId;
+
+    if (!activeQId) {
+      if (votesUnsubscribe) { votesUnsubscribe(); votesUnsubscribe = null; }
+      currentQuestion = null;
+      showState('waiting');
+      return;
+    }
+
+    if (currentQuestion && currentQuestion.id === activeQId) return;
+
+    try {
+      const qDoc = await db.collection('polls').doc(pollId).collection('questions').doc(activeQId).get();
+      if (!qDoc.exists) { showState('waiting'); return; }
+      currentQuestion = { id: qDoc.id, ...qDoc.data() };
+      selectedOptionId = null;
+      if (votesUnsubscribe) { votesUnsubscribe(); votesUnsubscribe = null; }
+
+      if (hasVoted(activeQId)) {
+        showResults(activeQId, currentQuestion);
+      } else {
+        showVoting(currentQuestion);
+      }
+    } catch (err) {
+      showState('error');
+    }
+  });
+}
+
+// ============================
+//  Voting UI
+// ============================
+
+function showVoting(question) {
+  showState('voting');
+  document.getElementById('question-text-display').textContent = question.text;
+
+  const optEl = document.getElementById('vote-options');
+  optEl.innerHTML = '';
+  selectedOptionId = null;
+
+  question.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'vote-opt';
+    btn.dataset.optionId = opt.id;
+    btn.innerHTML = `
+      <div class="vote-opt-circle">${opt.letter || LETTERS[i]}</div>
+      <div class="vote-opt-text">${escapeHtml(opt.text)}</div>
+      <div class="vote-opt-check">✓</div>`;
+    btn.addEventListener('click', () => selectOpt(opt.id, btn));
+    optEl.appendChild(btn);
+  });
+
+  document.getElementById('submit-vote-btn').disabled = true;
+  document.getElementById('submit-vote-btn').onclick = submitVote;
+}
+
+function selectOpt(optionId, clickedBtn) {
+  document.querySelectorAll('.vote-opt').forEach(el => el.classList.remove('selected'));
+  clickedBtn.classList.add('selected');
+  selectedOptionId = optionId;
+  document.getElementById('submit-vote-btn').disabled = false;
+}
+
+// ============================
+//  Submit
+// ============================
+
+async function submitVote() {
+  if (!selectedOptionId || !currentQuestion) return;
+  const btn = document.getElementById('submit-vote-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;width:18px;height:18px;margin:0 auto;"></div>';
+
+  const voterToken = getVoterToken();
+  const qId = currentQuestion.id;
+
+  try {
+    await db.collection('polls').doc(pollId)
+      .collection('questions').doc(qId)
+      .collection('votes').doc(voterToken)
+      .set({ optionId: selectedOptionId, createdAt: firebase.firestore.FieldValue.serverTimestamp(), voterToken });
+    markVoted(qId);
+    saveMyChoice(qId, selectedOptionId);
+    showResults(qId, currentQuestion);
+    showToast('投票成功！感謝您的參與', 'success');
+  } catch (err) {
+    showToast('投票失敗：' + err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '確認投票';
+  }
+}
+
+// ============================
+//  Results UI
+// ============================
+
+function showResults(qId, question) {
+  showState('results');
+  document.getElementById('results-question-text').textContent = question.text;
+  const myChoice = getMyChoice(qId);
+
+  votesUnsubscribe = db.collection('polls').doc(pollId)
+    .collection('questions').doc(qId).collection('votes')
+    .onSnapshot(snap => {
+      const counts = {};
+      snap.docs.forEach(d => { const o = d.data().optionId; counts[o] = (counts[o] || 0) + 1; });
+      const total = snap.size;
+      const maxVotes = Math.max(...Object.values(counts), 0);
+
+      document.getElementById('results-total-votes').textContent = `共 ${total} 票`;
+
+      document.getElementById('results-list').innerHTML = question.options.map((opt, i) => {
+        const c = counts[opt.id] || 0;
+        const pct = total > 0 ? Math.round((c / total) * 100) : 0;
+        const isWinner = c === maxVotes && c > 0;
+        const isMe = opt.id === myChoice;
+        return `
+          <div class="result-item ${isWinner ? 'winner' : ''}">
+            <div class="result-row">
+              <div class="result-opt-label">
+                ${escapeHtml(opt.text)}
+                ${isMe ? '<span class="my-vote-tag">我的選擇</span>' : ''}
+              </div>
+              <div class="result-stat">${c} · ${pct}%</div>
+            </div>
+            <div class="result-bar">
+              <div class="result-bar-fill" style="width:${pct}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+    });
+}
+
+// ============================
+//  Start
+// ============================
+document.addEventListener('DOMContentLoaded', init);

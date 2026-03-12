@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================
+    // Polls
+    // ============================
+    match /polls/{pollId} {
+      // Anyone can read polls (needed for vote page to load poll info)
+      allow read: if true;
+
+      // Only authenticated admins can create/update/delete polls they own
+      allow create: if request.auth != null
+        && request.resource.data.adminId == request.auth.uid;
+
+      allow update: if request.auth != null
+        && resource.data.adminId == request.auth.uid;
+
+      allow delete: if request.auth != null
+        && resource.data.adminId == request.auth.uid;
+
+      // ============================
+      // Questions (sub-collection)
+      // ============================
+      match /questions/{questionId} {
+        // Anyone can read questions (needed for voting)
+        allow read: if true;
+
+        // Only the poll's admin can manage questions
+        allow create, update, delete: if request.auth != null
+          && get(/databases/$(database)/documents/polls/$(pollId)).data.adminId == request.auth.uid;
+
+        // ============================
+        // Votes (sub-sub-collection)
+        // ============================
+        match /votes/{voteId} {
+          // Anyone can read votes (for results display)
+          allow read: if true;
+
+          // Anyone can create a vote (anonymous voting)
+          // The voteId is the voter's token - this prevents duplicates
+          // since Firestore doesn't allow creating a document with an existing ID
+          // (it would be an update, which is blocked below)
+          allow create: if true
+            && request.resource.data.keys().hasAll(['optionId', 'createdAt', 'voterToken'])
+            && request.resource.data.optionId is string
+            && request.resource.data.voterToken is string;
+
+          // Votes cannot be updated or deleted by participants
+          // Only the poll admin can delete votes (for cleanup)
+          allow update: if false;
+
+          allow delete: if request.auth != null
+            && get(/databases/$(database)/documents/polls/$(pollId)).data.adminId == request.auth.uid;
+        }
+      }
+    }
+  }
+}
