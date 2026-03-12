@@ -139,6 +139,12 @@ input, textarea { font-family: inherit; }
 }
 .btn-success:hover { background: #D1FAE5; }
 
+.btn-reset {
+  background: #FFF7ED; color: #C2410C;
+  border-color: #FED7AA;
+}
+.btn-reset:hover { background: #FFEDD5; }
+
 .btn-xs  { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
 .btn-sm  { padding: 7px 12px; font-size: 13px; }
 .btn-lg  { padding: 12px 22px; font-size: 15px; border-radius: var(--r); }

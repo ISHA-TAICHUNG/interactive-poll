@@ -155,6 +155,52 @@ document.getElementById('confirm-create-poll').addEventListener('click', async (
   }
 });
 
+// Reset poll votes
+document.getElementById('reset-poll-btn').addEventListener('click', async () => {
+  if (!currentPollId) return;
+  if (!confirm('確定要重置所有票數？題目會保留，但所有投票紀錄將清除，此操作無法復原。')) return;
+
+  const btn = document.getElementById('reset-poll-btn');
+  btn.disabled = true; btn.textContent = '重置中...';
+
+  try {
+    const qSnap = await db.collection('polls').doc(currentPollId).collection('questions').get();
+
+    // 每 400 筆送一次 batch，避免超過 Firestore 500 筆上限
+    let batch = db.batch();
+    let count = 0;
+
+    for (const qDoc of qSnap.docs) {
+      const vSnap = await db.collection('polls').doc(currentPollId)
+        .collection('questions').doc(qDoc.id).collection('votes').get();
+
+      vSnap.docs.forEach(vDoc => {
+        batch.delete(vDoc.ref);
+        count++;
+        if (count >= 400) {
+          batch.commit();
+          batch = db.batch();
+          count = 0;
+        }
+      });
+
+      // 重設題目狀態
+      batch.update(qDoc.ref, { isActive: false });
+      count++;
+    }
+
+    // 清除目前開放的題目
+    batch.update(db.collection('polls').doc(currentPollId), { activeQuestionId: null });
+    await batch.commit();
+
+    showToast('票數已重置，題目保留完整！', 'success');
+  } catch (err) {
+    showToast('重置失敗: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '🔄 重置票數';
+  }
+});
+
 // Delete poll
 document.getElementById('delete-poll-btn').addEventListener('click', async () => {
   if (!currentPollId) return;
